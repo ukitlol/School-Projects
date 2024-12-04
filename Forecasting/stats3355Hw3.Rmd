@@ -1,0 +1,208 @@
+---
+title: "STATS3355_HW3"
+author: "Udit Lal"
+date: "2024-02-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Problem 1
+
+step 0
+```{r}
+library(ggplot2)
+a <- read.csv("train.csv")
+```
+
+(a) turn price_range into a factor variable
+```{r}
+a$price_range <- factor(a$price_range, labels = c("Low", "Medium", "High", "veryHigh"))
+```
+
+(b) Plot battery power vs ram
+```{r}
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) + 
+  geom_point()
+```
+
+
+(c) Pearson Coefficient
+```{r}
+corr <- cor(a$ram, a$battery_power, method = 'pearson')
+print(corr)
+```
+
+(d) Subset Mobile Data
+```{r}
+priceLow <- subset(a, price_range == "Low")
+priceMedium <- subset(a, price_range == "Medium")
+priceHigh <- subset(a, price_range == "High")
+priceVeryhigh <- subset(a, price_range == "veryHigh")
+```
+
+(e) Pearsons for the subsets
+```{r}
+corrLow <- cor(priceLow$ram, priceLow$battery_power, method = 'pearson')
+corrMedium <- cor(priceMedium$ram, priceMedium$battery_power, method = 'pearson')
+corrHigh <- cor(priceHigh$ram, priceHigh$battery_power, method = 'pearson')
+corrVeryHigh <- cor(priceVeryhigh$ram, priceVeryhigh$battery_power, method = 'pearson')
+
+print(corrLow)
+print(corrMedium)
+print(corrHigh)
+print(corrVeryHigh)
+
+#these are different because High 
+```
+
+(f) trend lines
+```{r}
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+(g) Average and median clock speeds
+```{r}
+c4 <- subset(a, n_cores == 4)
+c6 <- subset(a, n_cores == 6)
+c8 <- subset(a, n_cores == 8)
+
+avgC4 <- mean(c4$clock_speed)
+avgC6 <- mean(c6$clock_speed)
+avgC8 <- mean(c8$clock_speed)
+
+medC4 <- median(c4$clock_speed)
+medC6 <- median(c6$clock_speed)
+medC8 <- median(c8$clock_speed)
+
+#The numbers don't change because they are uncorrelated 
+```
+
+(h) Density curves
+```{r}
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) +
+  geom_density_2d() +
+  scale_color_manual(values = c("blue", "green", "red", "purple")) +
+  labs() 
+```
+
+(i) Box plots
+```{r}
+ggplot(a, aes(x = price_range, y = ram, fill = price_range)) +
+  geom_boxplot() +
+  labs()
+```
+
+(j)
+
+
+(k) Factor log2(ram)
+```{r}
+a$logRam <- factor(round(log2(a$ram), digits = 2))
+```
+
+(l) Stacked bar plot
+```{r}
+ggplot(a, aes(x = logRam, fill = price_range)) +
+  geom_bar(position = "stack") +
+  labs(title = "Stacked Bar Plot of Price Range by log2(RAM)",
+       x = "log2(RAM)",
+       y = "Frequency") +
+  scale_fill_manual(values = c("blue", "green", "red", "purple"), 
+                    labels = c("Low", "Medium", "High", "veryHigh"))
+```
+
+
+#Problem 2
+```{r}
+b <- mpg
+```
+
+(a) Factor cylinders
+```{r}
+b$cyl <- factor(b$cyl, levels = c("4", "5", "6", "8"), ordered = TRUE)
+```
+
+(b) Factor transmission
+```{r}
+b$trans <- factor(substr(b$trans, 1, 4), levels = c("auto", "manu"))
+```
+
+(c) Factor drive
+```{r}
+b$drv <- factor(b$drv, levels = c("f", "r", "4"), ordered = TRUE)
+```
+
+(d) Factor fuel type
+```{r}
+b$fl <- factor(b$fl, levels = c("gasoline", "diesel", "other"))
+```
+
+(e) Factor class
+```{r}
+b$class <- factor(b$class, levels = c("2seater", "subcompact", "compact", "midsize", "suv", "minivan", "pickup"), ordered = TRUE)
+```
+
+(f) New variable country
+```{r}
+b$country <- NA
+
+manuCountry <- list(
+  "United States" = c("chevrolet", "dodge", "ford", "jeep", "lincoln", "mercury", "pontiac"),
+  "Japan" = c("honda", "nissan", "subaru", "toyota"),
+  "Germany" = c("audi", "volkswagen"),
+  "South Korea" = "hyundai",
+  "Great Britain" = "land rover")
+
+for (country in names(manuCountry)) {
+  b$country[b$manufacturer %in% manuCountry[[country]]] <- country
+}
+```
+
+(g) Bar plot
+```{r}
+ggplot(b, aes(x = country, fill = country)) +
+  geom_bar() +
+  labs(title = "Number of Samples by Country",
+       x = "Country",
+       y = "Number of Samples")
+```
+
+(h) summarize US cars
+```{r}
+summary(b[b$country == "United States", c("displ", "cyl", "trans", "drv", "fl", "class")])
+```
+
+(i) Box plot and summary for US and Japan
+```{r}
+mpgUs <- (b$cty + b$hwy) / 2
+mpgUs <- mpgUs[b$country == "United States"]
+mpgJapan <- (b$cty + b$hwy) / 2
+mpgJapan <- mpgJapan[b$country == "Japan"]
+
+boxplot(mpgUs, mpgJapan, names = c("USA", "Japan"),
+        ylab = "Combined MPG",
+        main = "Combined MPG of USA and Japan Cars")
+
+summary(mpgUs)
+summary(mpgJapan)
+```
+
+(j) Histogram
+```{r}
+displacementUS <- b$displ[b$country == "United States"]
+displacementJapan <- b$displ[b$country == "Japan"]
+
+hist(displacementUS, main = "Engine Displacement of USA Cars", xlab = "Displacement")
+hist(displacementJapan, main = "Engine Displacement of Japan Cars", xlab = "Displacement")
+```
+
+#Problem 3
+(a) Team name: Swish Squad
+(b) Team members names and majors: Andrew Contreras/Mathematics, Nimrod (Nico) Ohayon Rozanes/Data Science & Mathematics, Udit Lal/Economics & Computer Science
+(c) Next meeting date: March 4th

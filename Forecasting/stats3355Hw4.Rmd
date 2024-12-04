@@ -1,0 +1,230 @@
+---
+title: "stats3355Hw4"
+author: "Udit Lal"
+date: "2024-02-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Problem 1
+```{r}
+library(ggplot2)
+a <- read.csv("train.csv")
+```
+
+(a) Scatter plot
+```{r}
+a$price_range <- factor(a$price_range, labels = c("Low", "Medium", "High", "veryHigh"))
+
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) + 
+  geom_point()
+```
+
+(b) Trend lines
+```{r}
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+(c) Density curve
+```{r}
+ggplot(a, aes(x = battery_power, y = ram, color = price_range)) +
+  geom_density_2d() +
+  scale_color_manual(values = c("blue", "green", "red", "purple")) +
+  labs()
+
+#ggplot(a, aes(y = a$ram)) +
+#  geom_point() + 
+#  geom_density()
+```
+
+(d) Box plot
+```{r}
+ggplot(a, aes(x = price_range, y = ram, fill = price_range)) +
+  geom_boxplot() +
+  labs()
+```
+
+(e) Violin plots
+```{r}
+ggplot(a, aes(x = factor(price_range), y = ram, fill = factor(price_range))) +
+  geom_violin() +
+  labs(x = "Price Range", y = "RAM") +
+  scale_fill_manual(values = c("blue", "green", "orange", "red"), 
+                    name = "Price Range") +
+  ggtitle("Violin Plot of RAM by Price Range")
+```
+
+(f) Stacked bar graph
+```{r}
+a$logRam <- factor(round(log2(a$ram), digits = 2))
+
+ggplot(a, aes(x = logRam, fill = price_range)) +
+  geom_bar(position = "stack") +
+  labs(title = "Stacked Bar Plot of Price Range by log2(RAM)",
+       x = "log2(RAM)",
+       y = "Frequency")
+```
+
+
+#Problem 2
+
+```{r}
+library(dplyr)
+library(UsingR)
+b <- UScereal
+```
+
+(a) Replace names
+```{r}
+levels(b$mfr) <- c("General Mills", "Kelloggs", "Nabisco", "Post", "Quaker Oats", "Ralston Purina")
+```
+
+(b) Factor shelf
+```{r}
+b$shelf <- factor(b$shelf, labels = c("low", "middle", "upper"))
+```
+
+(c) Product variable
+```{r}
+b$product
+```
+(d) Pearsons 
+```{r}
+corrPr <- cor(b$calories, b$protein, method = 'pearson')
+corrfat <- cor(b$calories, b$fat, method = 'pearson')
+corrSo <- cor(b$calories, b$sodium, method = 'pearson')
+corrFi <- cor(b$calories, b$fibre, method = 'pearson')
+corrCa <- cor(b$calories, b$carbo, method = 'pearson')
+corrSu <- cor(b$calories, b$sugars, method = 'pearson')
+corrPo <- cor(b$calories, b$potassium, method = 'pearson')
+
+print(corrPr)
+print(corrfat)
+print(corrSo)
+print(corrFi)
+print(corrCa)
+print(corrSu)
+print(corrPo)
+```
+
+(e) correlation bar chart
+```{r}
+corr <- c(corrPr, corrfat, corrSo, corrFi, corrCa, corrSu, corrPo)
+names(corr) <- c("protein", "fat", "sodium", "fibre", "carbo", "sugars", "potass")
+corr <- sort(corr, decreasing = TRUE)
+barplot(corr, main = "Correlation with Calories", xlab = "Nutrition Fact", ylab = "Correlation")
+```
+(f) Scatter plot
+```{r}
+largest <- names(corr)[1]
+
+plot(b[, largest], b$calories, xlab = largest, ylab = "Calories", main = paste("Calories vs", largest))
+abline(lm(b$calories ~ b[, largest]), col = "red")
+```
+
+(g) calories density curves
+```{r}
+ggplot(b, aes(x = calories, fill = mfr)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Comparison of Calories by Manufacturer", x = "Calories") +
+  scale_fill_manual(values = c("General Mills" = "blue", "Kelloggs" = "orange", "Others" = "grey"))
+```
+
+(h) calorie significance
+```{r}
+gm_k <- b[b$mfr %in% c("General Mills", "Kelloggs"), ]
+
+ggplot(gm_k, aes(x = mfr, y = calories, fill = mfr)) +
+  geom_boxplot() +
+  labs(title = "Calories by Manufacturer", x = "Manufacturer", y = "Calories") 
+```
+
+(i) More box plots
+```{r}
+ggplot(UScereal, aes(x = mfr, y = protein)) +
+  geom_boxplot(fill = "blue") +
+  labs(title = "Protein Content by Manufacturer", x = "Manufacturer", y = "Protein (g)")
+```
+
+(j) Stacked bar plot
+```{r}
+ggplot(UScereal, aes(x = shelf, fill = mfr)) +
+  geom_bar(position = "stack") +
+  labs(title = "Shelf Placement by Manufacturer", x = "Shelf", fill = "Manufacturer")
+```
+
+
+#Problem 3
+```{r}
+c <- diamonds
+```
+
+(a) Histogram
+```{r}
+ggplot(c, aes(x = carat)) +
+  geom_histogram(binwidth = 0.1, fill = "lightblue", color = "black") +
+  labs(title = "Histogram of Carat", x = "Carat", y = "Frequency")
+```
+
+(b) Scatter plot price vs carat
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, color = clarity)) +
+  geom_point() +
+  labs(title = "Price vs Carat by Clarity", x = "Carat", y = "Price", color = "Clarity")
+```
+
+(c) price vs carat with a smooth line
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Price vs Carat with Smooth Line", x = "Carat", y = "Price")
+```
+
+(d) Price vs carat by clarity
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point() +
+  facet_wrap(~ clarity) +
+  labs(title = "Price vs Carat Faceted by Clarity", x = "Carat", y = "Price")
+```
+
+(f) create the charts
+```{r}
+ggplot(diamonds, aes(x = clarity, fill = cut)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Count of Diamonds by Clarity and Cut", x = "Clarity", y = "Count", fill = "Cut")
+
+ggplot(diamonds, aes(x = clarity)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Count of Diamonds by Clarity, Separated by Cut", x = "Clarity", y = "Count") +
+  facet_wrap(~ cut)
+```
+
+(g) 
+```{r}
+
+```
+
+(h)
+```{r}
+ggplot(diamonds, aes(x = clarity, y = price, fill = cut)) +
+  geom_boxplot() +
+  labs(title = "Price vs Clarity, Segmented by Cut", x = "Clarity", y = "Price", fill = "Cut")
+```
+
+(i)
+```{r}
+ggplot(diamonds, aes(x = cut, y = price, fill = cut)) +
+  geom_boxplot() +
+  labs(title = "Price vs Cut, Segmented by Carat", x = "Cut", y = "Price", fill = "Cut")
+```
+
+Email about: 
+1. Product name isnt used anywhere and doesnt have any data to be put in
+2. in part (e) it referes to correlations from part (a), do you mean part (d)?
