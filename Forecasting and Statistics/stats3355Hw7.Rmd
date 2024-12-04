@@ -1,0 +1,103 @@
+---
+title: "stats3355Hw7"
+author: "Udit Lal"
+date: "2024-04-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Problem 1
+```{r}
+data <- c(15.997, 16.005, 15.981, 15.954, 15.986, 16.021, 15.985, 16.001, 16.018, 16.056)
+
+sampleMean <- mean(data)
+sampleSTDV <- sd(data)
+n <- length(data)
+mu <- 16
+
+tStat <- (sampleMean - mu) / (sampleSTDV / sqrt(n))
+p <- pt(tStat, df = n - 1)
+
+print(tStat)
+print(p)
+```
+
+
+#Problem 2
+```{r}
+x <- 130
+n <- 200
+
+p0 <- 0.70
+
+p <- x / n
+
+z <- (p - p0) / sqrt((p0 * (1 - p0)) / n)
+p <- 2 * (1 - pnorm(abs(z)))
+
+print(z)
+print(p)
+
+```
+
+#Problem 3
+```{r}
+n1 <- 350
+n2 <- 150
+x1_bar <- 2
+x2_bar <- 1.85
+s1 <- 0.812
+s2 <- 0.837
+
+SE <- sqrt((s1^2 / n1) + (s2^2 / n2))
+
+t <- (x1_bar - x2_bar) / SE
+df <- n1 + n2 - 2
+
+p <- pt(t, df = df)
+
+# Print the results
+print(t)
+print(p)
+
+```
+
+#Problem 4
+```{r}
+n1 <- 150
+n2 <- 125
+x1 <- 14
+x2 <- 15
+
+p1 <- x1 / n1
+p2 <- x2 / n2
+
+prop <- (x1 + x2) / (n1 + n2)
+z <- (p1 - p2) / sqrt(prop * (1 - prop) * (1 / n1 + 1 / n2))
+p <- pnorm(z, lower.tail = TRUE)
+
+print(z)
+print(p)
+
+```
+
+#Problem 5
+```{r}
+library(UsingR)
+data(babies)
+
+MAge <- babies$age
+FAge <- babies$dage
+
+tTest <- t.test(MAge, FAge)
+
+tStat <- tTest$statistic
+p <- tTest$p.value
+
+print(tStat)
+print(p)
+```
+
